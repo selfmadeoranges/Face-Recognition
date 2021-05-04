@@ -80,7 +80,7 @@ with tf.Graph().as_default():
                         predictions = model.predict_proba(emb_array)
                         best_class_indices = np.argmax(predictions, axis=1)
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
-                        if best_class_probabilities>0.95:
+                        if best_class_probabilities>0.8:
                             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)    #boxing face
                             for H_i in HumanNames:
                                 if HumanNames[best_class_indices[0]] == H_i:
