@@ -5,9 +5,10 @@ import sys
 from classifier import training
 
 datadir = './aligned_img'
-modeldir = './model/20180402-114759.pb'
-#modeldir = './model/20170511-185253.pb'
-classifier_filename = './class/classifier.pkl'
+# modeldir = './model/20180402-114759.pb'
+modeldir = './model/20170511-185253.pb'
+# modeldir = './model/20180408-102900.pb'
+classifier_filename = './class/classifier-1.pkl'
 print ("Training Start")
 obj=training(datadir,modeldir,classifier_filename)
 get_file=obj.main_train()

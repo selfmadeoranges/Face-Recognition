@@ -31,7 +31,7 @@ class training:
                 embedding_size = embeddings.get_shape()[1]
 
                 print('Extracting features of images for model')
-                batch_size = 256
+                batch_size = 30 #256
                 image_size = 160 #160
                 nrof_images = len(path)
                 nrof_batches_per_epoch = int(math.ceil(1.0 * nrof_images / batch_size))

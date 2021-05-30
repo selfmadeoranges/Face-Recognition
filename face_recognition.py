@@ -11,8 +11,8 @@ import pickle
 from PIL import Image
 import tensorflow.compat.v1 as tf
 video= 0
-modeldir = './model/20180402-114759.pb'
-classifier_filename = './class/classifier.pkl'
+modeldir = './model/20170511-185253.pb' #20180408-102900.pb, 20180402-114759.pb, 20170511-185253.pb
+classifier_filename = './class/classifier-1.pkl' #classifier(30_180402).pkl, classifier(30_180408).pkl, classifier(30_170511).pkl
 npy='./npy'
 train_img="./train_img"
 with tf.Graph().as_default():
@@ -20,11 +20,11 @@ with tf.Graph().as_default():
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
     with sess.as_default():
         pnet, rnet, onet = detect_face.create_mtcnn(sess, npy)
-        minsize = 30  # minimum size of face
+        minsize = 20  # minimum size of face
         threshold = [0.6,0.7,0.7]  # three steps's threshold
-        factor = 0.409  # scale factor
+        factor = 0.709  # scale factor
         margin = 44
-        batch_size =100 #1000
+        batch_size =30      #학습시킬 데이터 양에 따라 변경시 효과적
         image_size = 182
         input_image_size = 160
         HumanNames = os.listdir(train_img)
@@ -44,7 +44,7 @@ with tf.Graph().as_default():
         while True:
             ret, frame = video_capture.read()
             frame = cv2.flip(frame, 1) #w좌우 반전
-            frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            #frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             #frame = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)    #resize frame (optional)
             timer =time.time()
             if frame.ndim == 2:
@@ -81,35 +81,34 @@ with tf.Graph().as_default():
                         best_class_indices = np.argmax(predictions, axis=1)
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
                         if best_class_probabilities>0.8:
-                            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)    #boxing face
+                            # cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)    #boxing face
                             for H_i in HumanNames:
                                 if HumanNames[best_class_indices[0]] == H_i:
-                                    result_names = HumanNames[best_class_indices[0]]
-                                    print("Predictions : [ name: {} , accuracy: {:.3f} ]".format(HumanNames[best_class_indices[0]],best_class_probabilities[0]))
-                                    cv2.rectangle(frame, (xmin, ymin-20), (xmax, ymin-2), (255, 255,255), -1)
-                                    cv2.putText(frame, result_names, (xmin,ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,
-                                                1, (0, 0, 0), thickness=1, lineType=1)
+                                    result_names = HumanNames[best_class_indices[0]]    #인식된 얼굴 이름
+                                    accuracy = str(int(best_class_probabilities[0] * 100)) + '%'    #정확도
+                                    print("Predictions : [ name: {} , accuracy: {:.3f} ]".format(result_names, best_class_probabilities[0]))
+                                    cv2.rectangle(frame, (xmin, ymin-45), (xmax, ymin-2), (255, 255,255), -1)   #이름, 정확도 쓰기위한 바탕
+                                    cv2.putText(frame, result_names, (xmin,ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 0), thickness=1, lineType=1)  #이름
+                                    cv2.putText(frame, accuracy, (xmin,ymin-20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 0), thickness=1, lineType=1)     #정확도
                                     
                         else :
-                            #####
+                            print(ymin,ymax,xmin,xmax)
                             face_img = frame[ymin:ymax, xmin:xmax] # 인식된 얼굴 이미지 crop
                             face_img = cv2.resize(face_img, dsize=(0, 0), fx=0.04, fy=0.04) # 축소
                             face_img = cv2.resize(face_img, (xmax-xmin, ymax-ymin), interpolation=cv2.INTER_AREA) # 확대
                             frame[ymin:ymax, xmin:xmax] = face_img # 인식된 얼굴 영역 모자이크 처리
                     
-                            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255, 255, 255), 2)
-                            cv2.rectangle(frame, (xmin, ymin-20), (xmax, ymin-2), (255, 255,255), -1)
-                            cv2.putText(frame, "stranger", (xmin,ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL,
-                                                1, (0, 0, 0), thickness=1, lineType=1)
+                            # cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255, 255, 255), 2)  #boxing face
+                            # cv2.rectangle(frame, (xmin, ymin-20), (xmax, ymin-2), (255, 255,255), -1)   #이름 쓰기위한 바탕
+                            # cv2.putText(frame, "stranger", (xmin,ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 0), thickness=1, lineType=1)    #stranger 표기
                     except:   
-                        
                         print("error")
                        
-            endtimer = time.time()
-            fps = 1/(endtimer-timer)
-            cv2.rectangle(frame,(15,30),(135,60),(0,255,255),-1)
-            cv2.putText(frame, "fps: {:.2f}".format(fps), (20, 50),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-            cv2.imshow('Face Recognition', frame)
+            # endtimer = time.time()
+            #fps = 1/(endtimer-timer)
+            #cv2.rectangle(frame,(15,30),(135,60),(0,255,255),-1)
+            #cv2.putText(frame, "fps: {:.2f}".format(fps), (20, 50),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+            cv2.imshow('Real-time Face Recognition and mosaic', frame)
             key= cv2.waitKey(1)
             if key== 113: # "q"
                 break
