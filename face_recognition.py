@@ -10,9 +10,12 @@ import time
 import pickle
 from PIL import Image
 import tensorflow.compat.v1 as tf
+
+from datetime import datetime
+
 video= 0
-modeldir = './model/20170511-185253.pb' #20180408-102900.pb, 20180402-114759.pb, 20170511-185253.pb
-classifier_filename = './class/170511_50_2_cf.pkl' #classifier(30_180402).pkl, classifier(30_180408).pkl, classifier(30_170511).pkl
+modeldir = './model/20180402-114759.pb' #20180408-102900.pb, 20180402-114759.pb, 20170511-185253.pb
+classifier_filename = './class/180402_50_4_cf.pkl' #classifier(30_180402).pkl, classifier(30_180408).pkl, classifier(30_170511).pkl
 npy='./npy'
 train_img="./train_img"
 
@@ -29,7 +32,7 @@ with tf.Graph().as_default():
         threshold = [0.6,0.7,0.7]  # three steps's threshold
         factor = 0.709  # scale factor
         margin = 44
-        batch_size =50      #학습시킬 데이터 양에 따라 변경시 효과적
+        batch_size =30      #학습시킬 데이터 양에 따라 변경시 효과적
         image_size = 182
         input_image_size = 160
         HumanNames = os.listdir(train_img)
@@ -53,6 +56,8 @@ with tf.Graph().as_default():
             #frame = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)    #resize frame (optional)
             timer =time.time()
             
+            now = datetime.now()
+            # cv2.putText(frame, '{}:{}:{}'.format(now.hour, now.minute, now.second), (20,20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 0), thickness=1, lineType=1)
             cv2.imshow('low', frame)
 
             if frame.ndim == 2:
