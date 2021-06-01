@@ -15,6 +15,11 @@ modeldir = './model/20170511-185253.pb' #20180408-102900.pb, 20180402-114759.pb,
 classifier_filename = './class/170511_50_2_cf.pkl' #classifier(30_180402).pkl, classifier(30_180408).pkl, classifier(30_170511).pkl
 npy='./npy'
 train_img="./train_img"
+
+total_number = 0
+best_class_number = 0
+str_class_number = 0
+
 with tf.Graph().as_default():
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6)
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
@@ -47,6 +52,9 @@ with tf.Graph().as_default():
             #frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             #frame = cv2.resize(frame, (0,0), fx=0.5, fy=0.5)    #resize frame (optional)
             timer =time.time()
+            
+            cv2.imshow('low', frame)
+
             if frame.ndim == 2:
                 frame = facenet.to_rgb(frame)
             bounding_boxes, _ = detect_face.detect_face(frame, minsize, pnet, rnet, onet, threshold, factor)
@@ -80,8 +88,14 @@ with tf.Graph().as_default():
                         predictions = model.predict_proba(emb_array)
                         best_class_indices = np.argmax(predictions, axis=1)
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
+
+                        total_number+=1
+
                         if best_class_probabilities>0.8:
-                            # cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)    #boxing face
+
+                            best_class_number+=1
+
+                            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)    #boxing face
                             for H_i in HumanNames:
                                 if HumanNames[best_class_indices[0]] == H_i:
                                     result_names = HumanNames[best_class_indices[0]]    #인식된 얼굴 이름
@@ -92,6 +106,9 @@ with tf.Graph().as_default():
                                     cv2.putText(frame, accuracy, (xmin,ymin-20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 0), thickness=1, lineType=1)     #정확도
                                     
                         else :
+
+                            str_class_number+=1
+
                             print(ymin,ymax,xmin,xmax)
                             face_img = frame[ymin:ymax, xmin:xmax] # 인식된 얼굴 이미지 crop
                             face_img = cv2.resize(face_img, dsize=(0, 0), fx=0.04, fy=0.04) # 축소
@@ -111,6 +128,7 @@ with tf.Graph().as_default():
             cv2.imshow('Real-time Face Recognition and mosaic', frame)
             key= cv2.waitKey(1)
             if key== 113: # "q"
+                print('total number : {}, best_class_number : {}, str_class_number : {}'.format(total_number, best_class_number, str_class_number))
                 break
         video_capture.release()
         cv2.destroyAllWindows()
