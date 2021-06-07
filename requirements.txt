@@ -1,0 +1,11 @@
+tensorflow==1.7
+scipy
+scikit-learn
+opencv-python
+opencv-contrib-python
+h5py
+matplotlib
+Pillow
+requests
+psutil
+imageio

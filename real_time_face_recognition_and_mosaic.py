@@ -13,7 +13,7 @@ import tensorflow.compat.v1 as tf
 
 from datetime import datetime
 
-video='./4persontest.mp4'
+video='./low.avi'
 modeldir = './model/20180402-114759.pb' #20180408-102900.pb, 20180402-114759.pb, 20170511-185253.pb
 classifier_filename = './class/180402_100_4_cf.pkl' #classifier(30_180402).pkl, classifier(30_180408).pkl, classifier(30_170511).pkl
 npy='./npy'
